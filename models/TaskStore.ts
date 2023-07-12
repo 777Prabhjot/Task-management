@@ -6,15 +6,18 @@ const TaskStore = types
     tasks: types.array(Task),
   })
   .actions((self) => ({
-    addTask(task: { title: string; description: string, status: string }) {
-      self.tasks.push(Task.create({ id: Math.random().toString(), ...task }));
+    addTask(task: { id: string,title: string, description: string, status: string }) {
+      self.tasks.push(Task.create({ id: task.id, title: task.title, description: task.description, status: task.status }));
     },
-    updateTask(task: { id: string; title: string; description: string, status: string }) {
+    updateTask(task: { id: string, title: string, description: string, status: string }) {
       const existingTask = self.tasks.find((u) => u.id === task.id);
+      console.log(existingTask)
       if (existingTask) {
+        existingTask.id = task.id
         existingTask.title = task.title;
         existingTask.description = task.description;
         existingTask.status = task.status;
+        console.log('yes')
       }
     },
     deleteTask(taskId: string) {
@@ -22,6 +25,9 @@ const TaskStore = types
       if (taskIndex !== -1) {
         self.tasks.splice(taskIndex, 1);
       }
+    },
+    addExistingArray(existingArray: Array<any>) {
+      self.tasks = self.tasks.concat(existingArray);
     },
   }));
 
