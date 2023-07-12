@@ -4,9 +4,9 @@ First install the packages:
 
 ```bash
 npm install
-#or
+# or
 yarn install
-#or
+# or
 pnpm install
 ```
 
