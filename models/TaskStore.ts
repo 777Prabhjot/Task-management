@@ -1,23 +1,39 @@
-import { types } from 'mobx-state-tree';
-import Task from './Task';
+import { types } from "mobx-state-tree";
+import Task from "./Task";
 
 const TaskStore = types
   .model({
     tasks: types.array(Task),
   })
   .actions((self) => ({
-    addTask(task: { id: string,title: string, description: string, status: string }) {
-      self.tasks.push(Task.create({ id: task.id, title: task.title, description: task.description, status: task.status }));
+    addTask(task: {
+      id: string;
+      title: string;
+      description: string;
+      status: string;
+    }) {
+      self.tasks.push(
+        Task.create({
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          status: task.status,
+        })
+      );
     },
-    updateTask(task: { id: string, title: string, description: string, status: string }) {
+    updateTask(task: {
+      id: string;
+      title: string;
+      description: string;
+      status: string;
+    }) {
       const existingTask = self.tasks.find((u) => u.id === task.id);
-      console.log(existingTask)
+
       if (existingTask) {
-        existingTask.id = task.id
+        existingTask.id = task.id;
         existingTask.title = task.title;
         existingTask.description = task.description;
         existingTask.status = task.status;
-        console.log('yes')
       }
     },
     deleteTask(taskId: string) {

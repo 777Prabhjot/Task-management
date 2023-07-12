@@ -1,14 +1,16 @@
 "use client";
 import { observer } from "mobx-react-lite";
 import { useEffect, useState } from "react";
-import { useLocalStore } from "mobx-react-lite";
+import { useLocalObservable } from "mobx-react-lite";
 import TaskStore from "../models/TaskStore";
 import TasksTable from "@/components/TasksTable";
 
 const Home = observer(() => {
-  const taskStore = useLocalStore(() => TaskStore.create());
-  const existedTasks: Array<object> = JSON.parse(localStorage.getItem('tasks'));
-  const [tasks, setTasks] = useState([]);
+  const taskStore = useLocalObservable(() => TaskStore.create());
+  let existedTasks: Array<any> =
+    typeof window !== "undefined" &&
+    JSON.parse(window.localStorage.getItem("tasks"));
+  const [tasks, setTasks] = useState<Array<any>>([]);
   const [values, setValues] = useState({
     id: Math.random().toString(),
     title: "",
@@ -30,12 +32,11 @@ const Home = observer(() => {
   };
 
   useEffect(() => {
-    if(existedTasks){
-      setTasks(existedTasks)
-      taskStore.addExistingArray(existedTasks)
+    if (existedTasks) {
+      setTasks(existedTasks);
+      taskStore.addExistingArray(existedTasks);
     }
-  },[])
-
+  }, []);
 
   const handleAddTask = () => {
     if (values.title.trim() && values.description.trim()) {
@@ -46,13 +47,25 @@ const Home = observer(() => {
         status: status.trim(),
       });
 
-      if(existedTasks){
-        existedTasks.push({id: values.id, title: values.title, description: values.description, status})
-        localStorage.setItem('tasks', JSON.stringify(existedTasks));
-      }else{
+      if (existedTasks) {
+        existedTasks.push({
+          id: values.id,
+          title: values.title,
+          description: values.description,
+          status,
+        });
+        localStorage.setItem("tasks", JSON.stringify(existedTasks));
+        setTasks(existedTasks);
+      } else {
         const tasksArr: Array<object> = [];
-        tasksArr.push({id: values.id, title: values.title, description: values.description, status});
-        localStorage.setItem('tasks', JSON.stringify(tasksArr));
+        tasksArr.push({
+          id: values.id,
+          title: values.title,
+          description: values.description,
+          status,
+        });
+        localStorage.setItem("tasks", JSON.stringify(tasksArr));
+        setTasks(tasksArr);
       }
     }
 
@@ -67,14 +80,15 @@ const Home = observer(() => {
       status,
     });
 
-    if(existedTasks){
-      existedTasks.push({id: values.id, title: values.title, description: values.description, status})
-      localStorage.setItem('tasks', JSON.stringify(existedTasks));
-    }else{
-      const tasksArr: Array<object> = [];
-      tasksArr.push({id: values.id, title: values.title, description: values.description, status});
-      localStorage.setItem('tasks', JSON.stringify(tasksArr));
-    }
+    existedTasks.forEach((item) => {
+      if (item.id === update.taskId) {
+        (item.title = values.title), (item.description = values.description);
+        item.status = status;
+      }
+    });
+
+    localStorage.setItem("tasks", JSON.stringify(existedTasks));
+    setTasks(existedTasks);
 
     setValues({ id: Math.random().toString(), title: "", description: "" });
     setUpdate({ taskId: "", update: false });
@@ -83,6 +97,11 @@ const Home = observer(() => {
 
   const handleDeleteTask = (taskId: string) => {
     taskStore.deleteTask(taskId);
+
+    const newTasks = existedTasks.filter((item) => item.id !== taskId);
+    existedTasks = newTasks;
+    localStorage.setItem("tasks", JSON.stringify(existedTasks));
+    setTasks(existedTasks);
   };
 
   return (
@@ -135,36 +154,43 @@ const Home = observer(() => {
         )}
       </div>
       <TasksTable>
-        {tasks.map((task: {id: string, title: string, description: string, status: string}) => (
-          <tr key={task.id}>
-            <td className="w-1/3 text-left py-3 px-4">{task.title}</td>
-            <td className="w-1/3 text-left py-3 px-4">{task.description}</td>
-            <td className="text-left py-3 px-4">
-              <button
-                className="hover:text-blue-500"
-                onClick={() => {
-                  setValues({
-                    id: task.id,
-                    title: task.title,
-                    description: task.description,
-                  });
-                  setStatus(task.status);
-                  setUpdate({ taskId: task.id, update: true });
-                }}
-              >
-                {task.status}
-              </button>
-            </td>
-            <td className="text-left py-3 px-4">
-              <button
-                className="bg-blue-500 p-1 text-white"
-                onClick={() => handleDeleteTask(task.id)}
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        ))}
+        {tasks.map(
+          (task: {
+            id: string;
+            title: string;
+            description: string;
+            status: string;
+          }) => (
+            <tr key={task.id}>
+              <td className="w-1/3 text-left py-3 px-4">{task.title}</td>
+              <td className="w-1/3 text-left py-3 px-4">{task.description}</td>
+              <td className="text-left py-3 px-4">
+                <button
+                  className="hover:text-blue-500"
+                  onClick={() => {
+                    setValues({
+                      id: task.id,
+                      title: task.title,
+                      description: task.description,
+                    });
+                    setStatus(task.status);
+                    setUpdate({ taskId: task.id, update: true });
+                  }}
+                >
+                  {task.status}
+                </button>
+              </td>
+              <td className="text-left py-3 px-4">
+                <button
+                  className="bg-blue-500 p-1 text-white"
+                  onClick={() => handleDeleteTask(task.id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          )
+        )}
       </TasksTable>
     </div>
   );
