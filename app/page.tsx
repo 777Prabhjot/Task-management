@@ -154,7 +154,7 @@ const Home = observer(() => {
         )}
       </div>
       <TasksTable>
-        {tasks.map(
+        {tasks?.map(
           (task: {
             id: string;
             title: string;
