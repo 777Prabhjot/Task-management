@@ -9,7 +9,7 @@ const Home = observer(() => {
   const taskStore = useLocalObservable(() => TaskStore.create());
   let existedTasks: Array<any> =
     typeof window !== "undefined" &&
-    JSON.parse(window.localStorage.getItem("tasks"));
+    JSON.parse(window.localStorage.getItem("tasks") || "{}");
   const [tasks, setTasks] = useState<Array<any>>([]);
   const [values, setValues] = useState({
     id: Math.random().toString(),

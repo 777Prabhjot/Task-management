@@ -1,6 +1,13 @@
 import { types } from "mobx-state-tree";
 import Task from "./Task";
 
+type Value = {
+  id: string,
+  title: string,
+  description: string,
+  status: string
+}
+
 const TaskStore = types
   .model({
     tasks: types.array(Task),
@@ -43,7 +50,7 @@ const TaskStore = types
       }
     },
     addExistingArray(existingArray: Array<any>) {
-      self.tasks = self.tasks.concat(existingArray);
+      self.tasks = Object.assign(self.tasks, existingArray);
     },
   }));
 
